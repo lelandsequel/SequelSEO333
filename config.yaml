@@ -1,0 +1,8 @@
+geo: "Houston, TX"
+max_industries: 5
+leads_per_industry: 30
+hot_lead_threshold: 70
+timezone: "America/Chicago"
+schedule:
+  weekday: "sun"   # sun, mon, tue, wed, thu, fri, sat
+  hour_local: 9
