@@ -1,7 +1,8 @@
 import os
 import csv
+import json
 import datetime as dt
-from typing import List, Dict
+from typing import List, Dict, Any
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -34,6 +35,16 @@ def _ensure_header(ws, header):
             ws.delete_rows(1)
         ws.insert_row(header, 1)
 
+def _sanitize_value(value: Any) -> str:
+    """Convert any value to a string safe for Google Sheets."""
+    if value is None:
+        return ""
+    if isinstance(value, (list, dict)):
+        return json.dumps(value)
+    if isinstance(value, bool):
+        return str(value)
+    return str(value)
+
 def append_rows(rows: List[Dict]):
     """Append lead data to CSV and optionally to Google Sheets.
 
@@ -48,13 +59,21 @@ def append_rows(rows: List[Dict]):
     date = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
     os.makedirs("./out", exist_ok=True)
     header = list(rows[0].keys())
-    values = [list(r.values()) for r in rows]
+
+    # Sanitize values for Google Sheets (convert lists/dicts to strings)
+    sanitized_values = []
+    for row in rows:
+        sanitized_row = [_sanitize_value(row.get(key)) for key in header]
+        sanitized_values.append(sanitized_row)
+
+    # For CSV, use original values
+    csv_values = [list(r.values()) for r in rows]
     csv_path = f"./out/leads_{date}.csv"
 
     with open(csv_path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(header)
-        w.writerows(values)
+        w.writerows(csv_values)
     print(f"✅ CSV saved: {csv_path}")
 
     # Upload to Google Drive (optional)
@@ -81,7 +100,7 @@ def append_rows(rows: List[Dict]):
             ws = sh.add_worksheet(title=ws_name, rows=1000, cols=30)
 
         _ensure_header(ws, header)
-        ws.append_rows(values, value_input_option="RAW")
+        ws.append_rows(sanitized_values, value_input_option="USER_ENTERED")
         print(f"✅ Google Sheets updated: {len(rows)} rows appended")
     except FileNotFoundError as e:
         print(f"⚠️  Google Sheets credentials not found: {e}")

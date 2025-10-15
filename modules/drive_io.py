@@ -31,33 +31,40 @@ def _get_drive_service():
 def upload_file_to_drive(file_path: str, folder_id: Optional[str] = None) -> Optional[str]:
     """
     Upload a file to Google Drive.
-    
+
+    NOTE: Service accounts cannot upload to regular "My Drive" folders.
+    This requires Google Workspace with Shared Drives.
+    For personal Google accounts, this feature is disabled.
+
     Args:
         file_path: Path to the file to upload
         folder_id: Optional Google Drive folder ID to upload to
-        
+
     Returns:
         URL of the uploaded file, or None if upload failed
     """
     if not os.path.exists(file_path):
         print(f"⚠️  File not found: {file_path}")
         return None
-    
+
     try:
         service = _get_drive_service()
-        
+
         # Get folder ID from environment if not provided
         if folder_id is None:
             folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
-        
+
+        if not folder_id:
+            print("⚠️  GOOGLE_DRIVE_FOLDER_ID not set, skipping Google Drive upload")
+            return None
+
         # Prepare file metadata
         file_name = Path(file_path).name
-        file_metadata = {'name': file_name}
-        
-        # Add to folder if specified
-        if folder_id:
-            file_metadata['parents'] = [folder_id]
-        
+        file_metadata = {
+            'name': file_name,
+            'parents': [folder_id]
+        }
+
         # Determine MIME type
         if file_path.endswith('.csv'):
             mime_type = 'text/csv'
@@ -67,27 +74,33 @@ def upload_file_to_drive(file_path: str, folder_id: Optional[str] = None) -> Opt
             mime_type = 'application/pdf'
         else:
             mime_type = 'application/octet-stream'
-        
-        # Upload file
+
+        # Upload file with supportsAllDrives=True for shared drives
         media = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
         file = service.files().create(
             body=file_metadata,
             media_body=media,
-            fields='id, webViewLink'
+            fields='id, webViewLink',
+            supportsAllDrives=True
         ).execute()
-        
+
         file_id = file.get('id')
         file_url = file.get('webViewLink')
-        
+
         # Make file accessible (anyone with link can view)
-        service.permissions().create(
-            fileId=file_id,
-            body={'type': 'anyone', 'role': 'reader'}
-        ).execute()
-        
+        try:
+            service.permissions().create(
+                fileId=file_id,
+                body={'type': 'anyone', 'role': 'reader'},
+                supportsAllDrives=True
+            ).execute()
+        except Exception as perm_error:
+            print(f"⚠️  Could not set public permissions: {perm_error}")
+            # File is still uploaded, just not public
+
         print(f"✅ Uploaded to Google Drive: {file_name}")
         print(f"   URL: {file_url}")
-        
+
         return file_url
         
     except FileNotFoundError as e:

@@ -277,7 +277,14 @@ Start with the highest-scoring leads below. Each has been analyzed for:
         except Exception as e:
             print(f"⚠️  Could not upload to Google Drive: {e}")
 
-    # Try to create Google Doc
+    # Google Docs creation disabled - text file uploaded to Drive instead
+    print(f"✅ Sales report ready: {text_path}")
+    if drive_url:
+        print(f"   Uploaded to Drive: {drive_url}")
+    return text_path
+
+    # Google Docs creation code (disabled - requires domain-wide delegation)
+    """
     try:
         docs_service = _get_docs_service()
         drive_service = _get_drive_service()
@@ -300,17 +307,45 @@ Start with the highest-scoring leads below. Each has been analyzed for:
             documentId=doc_id,
             body={'requests': requests}
         ).execute()
-        
+
+        # Move to Shared Drive if folder ID is set
+        folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
+        if folder_id:
+            try:
+                # Get current parents
+                file = drive_service.files().get(
+                    fileId=doc_id,
+                    fields='parents',
+                    supportsAllDrives=True
+                ).execute()
+                previous_parents = ",".join(file.get('parents', []))
+
+                # Move to Shared Drive folder
+                drive_service.files().update(
+                    fileId=doc_id,
+                    addParents=folder_id,
+                    removeParents=previous_parents,
+                    fields='id, parents, webViewLink',
+                    supportsAllDrives=True
+                ).execute()
+                print(f"   Moved to Shared Drive folder")
+            except Exception as e:
+                print(f"   ⚠️  Could not move to Shared Drive: {e}")
+
         # Make it accessible (optional - adjust permissions as needed)
         # This makes it viewable by anyone with the link
-        drive_service.permissions().create(
-            fileId=doc_id,
-            body={'type': 'anyone', 'role': 'reader'}
-        ).execute()
-        
+        try:
+            drive_service.permissions().create(
+                fileId=doc_id,
+                body={'type': 'anyone', 'role': 'reader'},
+                supportsAllDrives=True
+            ).execute()
+        except Exception as e:
+            print(f"   ⚠️  Could not set permissions: {e}")
+
         doc_url = f"https://docs.google.com/document/d/{doc_id}/edit"
         print(f"✅ Google Doc created: {doc_url}")
-        
+
         return doc_url
         
     except FileNotFoundError as e:
@@ -325,4 +360,5 @@ Start with the highest-scoring leads below. Each has been analyzed for:
         print(f"⚠️  Failed to create Google Doc: {e}")
         print(f"   Report saved as text file: {text_path}")
         return text_path
+    """
 
