@@ -1,5 +1,5 @@
 """
-Streamlit UI for SEO Lead Finder
+C&L Page Services - SEO Lead Finder
 Provides manual search, automation configuration, and results dashboard
 """
 
@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 # Page config
 st.set_page_config(
-    page_title="SEO Lead Finder",
+    page_title="C&L Page Services - Lead Finder",
     page_icon="🎯",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -168,7 +168,7 @@ def generate_github_workflow(config):
     locations = config.get('automation', {}).get('locations', ['Houston, TX'])
     
     workflow = {
-        'name': 'Weekly SEO Lead Finder',
+        'name': 'C&L Page Services - Weekly Lead Finder',
         'on': {
             'schedule': [{'cron': f'{minute} {hour} * * {cron_day}'}],
             'workflow_dispatch': {}
@@ -217,7 +217,8 @@ def generate_github_workflow(config):
 
 # Sidebar
 with st.sidebar:
-    st.markdown("### 🎯 SEO Lead Finder")
+    st.markdown("### 🎯 C&L Page Services")
+    st.markdown("#### Lead Finder")
     st.markdown("---")
     
     # Quick stats
@@ -243,7 +244,7 @@ tab1, tab2, tab3 = st.tabs(["🎯 Manual Search", "⏰ Automation", "📊 Result
 
 # TAB 1: Manual Search
 with tab1:
-    st.markdown('<div class="main-header">🎯 Find SEO Leads</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-header">🎯 C&L Page Services - Find Leads</div>', unsafe_allow_html=True)
     
     col1, col2 = st.columns([2, 1])
     
@@ -815,8 +816,9 @@ with tab3:
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666; padding: 2rem;">
-    <p>🎯 SEO Lead Finder | Built with Streamlit |
-    <a href="https://github.com/lelandsequel/SequelSEO333" target="_blank">GitHub</a>
+    <p>🎯 C&L Page Services - Lead Finder | Built with Streamlit |
+    <a href="https://github.com/lelandsequel/SequelSEO333" target="_blank">GitHub</a> |
+    <a href="https://cl-page.com" target="_blank">C&L Page</a>
     </p>
 </div>
 """, unsafe_allow_html=True)

@@ -1,6 +1,6 @@
-# SEO Lead Finder — Hybrid Deep Research + Agentic Search
+# C&L Page Services — Lead Finder
 
-A production-ready scaffold to discover **the 5 industries most in need of SEO/AEO** each week in a target geography, then identify and score businesses, log them to Google Sheets, and notify you for hot leads.
+A production-ready tool to discover **the 5 industries most in need of SEO/AEO** each week in a target geography, then identify and score businesses, generate detailed sales intelligence reports, and notify you for hot leads.
 
 - **Weekly schedule (Sundays)** via APScheduler (local run) or GitHub Actions (CI).
 - **Industry Discovery**: Ranks industries by "SEO need" using multiple signals.
@@ -15,6 +15,8 @@ A production-ready scaffold to discover **the 5 industries most in need of SEO/A
 
 ## Quickstart
 
+### Option 1: Streamlit UI (Recommended)
+
 1. **Clone / unzip** this project.
 2. Create and fill **.env** from `.env.example` (API keys & config).
 3. Install deps:
@@ -22,11 +24,25 @@ A production-ready scaffold to discover **the 5 industries most in need of SEO/A
    python -m venv .venv && source .venv/bin/activate
    pip install -r requirements.txt
    ```
-4. (Optional) Enable GitHub Actions with your secrets to run weekly.
-5. Run once locally to test:
+4. **Launch the UI**:
+   ```bash
+   streamlit run app.py
+   ```
+5. Use the UI to:
+   - Run manual searches
+   - Configure weekly automation
+   - View results dashboard with full sales intelligence reports
+
+See **[UI_GUIDE.md](UI_GUIDE.md)** for detailed UI documentation.
+
+### Option 2: Command Line
+
+1. Follow steps 1-3 above
+2. Run once locally to test:
    ```bash
    python main.py --geo "Houston, TX"
    ```
+3. (Optional) Enable GitHub Actions with your secrets to run weekly.
 
 ### Required/Optional APIs
 - **SERP**: SerpAPI or Google Custom Search (SERPAPI_KEY or GCS creds)

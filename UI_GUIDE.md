@@ -1,4 +1,4 @@
-# 🎯 SEO Lead Finder - UI Guide
+# 🎯 C&L Page Services - Lead Finder UI Guide
 
 ## 🚀 Quick Start
 
