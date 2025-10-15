@@ -45,13 +45,25 @@ See **[UI_GUIDE.md](UI_GUIDE.md)** for detailed UI documentation.
 3. (Optional) Enable GitHub Actions with your secrets to run weekly.
 
 ### Required/Optional APIs
-- **SERP**: SerpAPI or Google Custom Search (SERPAPI_KEY or GCS creds)
+- **SERP**: DataForSEO (recommended) or SerpAPI
+- **Google Places**: For finding businesses
+- **PageSpeed Insights**: For Core Web Vitals analysis
+- **LLM**: Claude (Anthropic) or OpenAI for detailed SEO analysis
 - **Traffic/Backlinks (optional)**: Ahrefs/Semrush API
-- **PageSpeed/Lighthouse (optional)**: PSI API (PageSpeed Insights)
 - **Contacts (optional)**: Hunter.io or Clearbit
-- **Sheets**: Service Account JSON or OAuth; see `sheets_io.py`
+- **Google Sheets & Drive (optional)**: Service Account JSON; see **[GOOGLE_SETUP_GUIDE.md](GOOGLE_SETUP_GUIDE.md)**
 
 > All integrations are **optional**. Stubs and fallbacks are provided so you can iterate safely.
+
+### Google Sheets & Drive Integration
+
+To automatically upload results to Google Sheets and sales reports to Google Drive:
+
+1. Follow the detailed setup guide: **[GOOGLE_SETUP_GUIDE.md](GOOGLE_SETUP_GUIDE.md)**
+2. This enables:
+   - ✅ CSV data uploaded to Google Sheets (structured, filterable)
+   - ✅ Sales reports uploaded to Google Drive (full intelligence reports)
+   - ✅ Access from anywhere, easy team collaboration
 
 ---
 

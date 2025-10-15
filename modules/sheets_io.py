@@ -5,6 +5,16 @@ from typing import List, Dict
 import gspread
 from google.oauth2.service_account import Credentials
 
+# Import Google Drive upload functionality
+try:
+    from modules.drive_io import upload_csv
+except ImportError:
+    # Fallback if module structure is different
+    try:
+        from drive_io import upload_csv
+    except ImportError:
+        upload_csv = None
+
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
@@ -46,6 +56,13 @@ def append_rows(rows: List[Dict]):
         w.writerow(header)
         w.writerows(values)
     print(f"✅ CSV saved: {csv_path}")
+
+    # Upload to Google Drive (optional)
+    if upload_csv:
+        try:
+            upload_csv(csv_path)
+        except Exception as e:
+            print(f"⚠️  Could not upload CSV to Google Drive: {e}")
 
     # Try to write to Google Sheets (optional)
     try:

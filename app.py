@@ -143,13 +143,22 @@ def normalize_dataframe(df):
 def run_pipeline(geo, industries=None, add_industries=None):
     """Run the lead finder pipeline"""
     cmd = ["python3", "main.py", "--once", "--geo", geo]
-    
+
     if industries:
         cmd.extend(["--industries", industries])
     elif add_industries:
         cmd.extend(["--add-industries", add_industries])
-    
-    return subprocess.run(cmd, capture_output=True, text=True)
+
+    try:
+        # Run with 15 minute timeout
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=900)
+        return result
+    except subprocess.TimeoutExpired:
+        st.error("⏱️ Pipeline timed out after 15 minutes. This usually means an API is not responding.")
+        return None
+    except Exception as e:
+        st.error(f"❌ Error running pipeline: {str(e)}")
+        return None
 
 def generate_github_workflow(config):
     """Generate GitHub Actions workflow YAML"""
@@ -634,16 +643,23 @@ git push origin main
         if st.button("🧪 Test Automation Now"):
             st.info("🚀 Running test automation...")
 
-            with st.spinner("Running automation test..."):
+            with st.spinner("Running automation test... This may take 5-10 minutes."):
                 # Run for first location only
                 if locations:
                     result = run_pipeline(locations[0])
 
-                    if result.returncode == 0:
+                    if result is None:
+                        st.error("❌ Pipeline failed or timed out. Check the terminal for details.")
+                    elif result.returncode == 0:
                         st.success(f"✅ Test completed for {locations[0]}")
+                        st.info("📊 Check the Results Dashboard (Tab 3) to view the new leads!")
                         st.rerun()
                     else:
-                        st.error(f"❌ Error: {result.stderr}")
+                        st.error(f"❌ Error running pipeline:")
+                        st.code(result.stderr)
+                        if result.stdout:
+                            with st.expander("📋 Full Output"):
+                                st.code(result.stdout)
                 else:
                     st.error("❌ No locations configured")
 
@@ -797,20 +813,54 @@ with tab3:
                 )
 
             with col2:
-                # Find corresponding report
-                file_date = selected_file.stem.split('_')[1]
-                report_pattern = f"sales_report_*_{file_date[:8]}*.txt"
-                report_files = list((Path(__file__).parent / "out").glob(report_pattern))
+                # Find corresponding report - try multiple patterns
+                file_date = selected_file.stem.split('_')[1]  # e.g., "20251014"
+
+                # Try different date formats
+                report_files = []
+
+                # Pattern 1: sales_report_*_YYYY-MM-DD.txt (e.g., sales_report_Houston_TX_2025-10-14.txt)
+                formatted_date = f"{file_date[:4]}-{file_date[4:6]}-{file_date[6:8]}"
+                report_files.extend(list((Path(__file__).parent / "out").glob(f"sales_report_*_{formatted_date}.txt")))
+
+                # Pattern 2: sales_report_*_YYYYMMDD.txt
+                report_files.extend(list((Path(__file__).parent / "out").glob(f"sales_report_*_{file_date}.txt")))
+
+                # Pattern 3: Match by date only (any report from same day)
+                if not report_files:
+                    all_reports = list((Path(__file__).parent / "out").glob("sales_report_*.txt"))
+                    # Filter reports from the same date
+                    for report in all_reports:
+                        report_mtime = datetime.fromtimestamp(report.stat().st_mtime)
+                        csv_mtime = datetime.fromtimestamp(selected_file.stat().st_mtime)
+                        # If within 24 hours, consider it a match
+                        if abs((report_mtime - csv_mtime).total_seconds()) < 86400:
+                            report_files.append(report)
+
+                # Pattern 4: Just get the latest report as last resort
+                if not report_files:
+                    all_reports = list((Path(__file__).parent / "out").glob("sales_report_*.txt"))
+                    if all_reports:
+                        report_files = [max(all_reports, key=lambda x: x.stat().st_mtime)]
 
                 if report_files:
-                    with open(report_files[0], 'r') as f:
+                    # Use the most recent matching report
+                    report_file = max(report_files, key=lambda x: x.stat().st_mtime)
+                    with open(report_file, 'r') as f:
                         report_data = f.read()
+
+                    # Show file size to help debug
+                    file_size_kb = len(report_data) / 1024
+
                     st.download_button(
-                        label="📊 Download Sales Report",
+                        label=f"📊 Download Sales Report ({file_size_kb:.0f}KB)",
                         data=report_data,
-                        file_name=f"sales_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                        mime="text/plain"
+                        file_name=report_file.name,
+                        mime="text/plain",
+                        help=f"Download the detailed sales intelligence report: {report_file.name}"
                     )
+                else:
+                    st.info("📄 No sales report available for this date")
 
 # Footer
 st.markdown("---")

@@ -24,14 +24,24 @@ jobs:
         shell: bash
       - name: Run once
         env:
+          # API Keys
+          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          PSI_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
+          DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
           AHREFS_API_KEY: ${{ secrets.AHREFS_API_KEY }}
           HUNTER_API_KEY: ${{ secrets.HUNTER_API_KEY }}
-          PSI_API_KEY: ${{ secrets.PSI_API_KEY }}
+          # Google Sheets & Drive
           GOOGLE_SHEETS_SERVICE_ACCOUNT_JSON_PATH: "./secrets/google-service-account.json"
-          GOOGLE_SHEETS_SPREADSHEET_ID: ${{ secrets.SHEETS_ID }}
+          GOOGLE_SHEETS_SPREADSHEET_ID: ${{ secrets.GOOGLE_SHEETS_SPREADSHEET_ID }}
           GOOGLE_SHEETS_WORKSHEET_NAME: "Leads"
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          # Slack
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # Defaults
           DEFAULT_GEO: "Houston, TX"
           MAX_INDUSTRIES: "5"
           LEADS_PER_INDUSTRY: "30"

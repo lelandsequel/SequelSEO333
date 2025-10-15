@@ -10,6 +10,16 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+# Import Google Drive upload functionality
+try:
+    from modules.drive_io import upload_sales_report
+except ImportError:
+    # Fallback if module structure is different
+    try:
+        from drive_io import upload_sales_report
+    except ImportError:
+        upload_sales_report = None
+
 
 SCOPE = [
     "https://www.googleapis.com/auth/documents",
@@ -256,9 +266,17 @@ Start with the highest-scoring leads below. Each has been analyzed for:
     
     with open(text_path, 'w', encoding='utf-8') as f:
         f.write(full_report)
-    
+
     print(f"✅ Sales report saved: {text_path}")
-    
+
+    # Upload to Google Drive (optional)
+    drive_url = None
+    if upload_sales_report:
+        try:
+            drive_url = upload_sales_report(text_path)
+        except Exception as e:
+            print(f"⚠️  Could not upload to Google Drive: {e}")
+
     # Try to create Google Doc
     try:
         docs_service = _get_docs_service()
