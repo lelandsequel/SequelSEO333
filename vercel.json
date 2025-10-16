@@ -1,9 +1,8 @@
 {
-  "redirects": [
+  "rewrites": [
     {
-      "source": "/:path*",
-      "destination": "https://cl-seo.streamlit.app/:path*",
-      "permanent": false
+      "source": "/(.*)",
+      "destination": "https://cl-seo.streamlit.app/$1"
     }
   ]
 }
